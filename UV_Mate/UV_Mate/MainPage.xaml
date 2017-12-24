@@ -5,12 +5,12 @@
              xmlns:views="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              x:Class="UV_Mate.MainPage">
     <Grid>
-        <views:SKCanvasView x:Name="canvasView" PaintSurface="OnPaint">
-            <views:SKCanvasView.GestureRecognizers>
+        <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False">
+            <views:SKGLView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnTapSample" />
                 <PanGestureRecognizer PanUpdated="OnPanSample" />
                 <PinchGestureRecognizer PinchUpdated="OnPinchSample" />
-            </views:SKCanvasView.GestureRecognizers>
-        </views:SKCanvasView>
+            </views:SKGLView.GestureRecognizers>
+        </views:SKGLView>
     </Grid>
 </ContentPage>
