@@ -5,6 +5,7 @@
              xmlns:views="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              x:Class="UV_Mate.MainPage">
     <Grid>
+        <Label Text="UV Mate" Grid.Row="0" />
         <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False">
             <views:SKGLView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnTapSample" />

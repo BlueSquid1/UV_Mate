@@ -67,15 +67,15 @@ public class UVIndex
 public class ArpansaUVResponse
 {
     public string id { get; set; }
-    public Graphdata[] GraphData { get; set; }
-    public Tabledata[] TableData { get; set; }
+    public GraphData[] GraphData { get; set; }
+    public TableData[] TableData { get; set; }
     public string CurrentDateTime { get; set; }
     public string CurrentUVIndex { get; set; }
     public string MaximumUVLevel { get; set; }
     public string MaximumUVLevelDateTime { get; set; }
 }
 
-public class Graphdata
+public class GraphData
 {
     public string id { get; set; }
     public string Date { get; set; }
@@ -83,7 +83,7 @@ public class Graphdata
     public float? Measured { get; set; }
 }
 
-public class Tabledata
+public class TableData
 {
     public string id { get; set; }
     public string Date { get; set; }
