@@ -13,8 +13,8 @@ namespace UV_Mate
 		{
 			InitializeComponent();
 
-			MainPage = new UV_Mate.MainPage();
-		}
+            MainPage = new UV_Mate.MainPage();
+        }
 
 		protected override void OnStart ()
 		{

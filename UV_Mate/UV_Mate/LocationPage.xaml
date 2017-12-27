@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="UV_Mate.LocationPage"
+             Title="Location">
+    <ContentPage.Content>
+        <StackLayout>
+            <Picker x:Name="locPicker" Title="Select a location" ItemsSource="{Binding MeasureLocations}" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

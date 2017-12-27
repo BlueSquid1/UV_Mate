@@ -11,11 +11,14 @@ namespace UV_Mate
 {
     public class ArpansaRealtimeFeed
     {
-        public async Task<ArpansaUVResponse> GetUVData(string longitude = "138.62", string latitude = "-34.92")
+        private HttpClient httpClient;
+
+        public ArpansaRealtimeFeed()
         {
-            HttpClient httpClient = new HttpClient();
-
-
+            this.httpClient = new HttpClient();
+        }
+        public async Task<ArpansaUVResponse> GetUVData(string longitude, string latitude)
+        {
             DateTime todayDate = DateTime.Now.Date;
             string dateString = todayDate.Year.ToString() + "-" + todayDate.Month.ToString() + "-" + todayDate.Day.ToString();
 
@@ -32,19 +35,17 @@ namespace UV_Mate
             return arpansaUV;
         }
 
-        public List<UVIndex> GenerateUVIndexs()
+        public async Task<ArpansaLocationResponse> GetValidLocations()
         {
-            //recommend UV indexes as outlined by WHO
-            //source: http://www.who.int/uv/publications/en/UVIGuide.pdf
-            List<UVIndex> UVIndexes = new List<UVIndex>();
+            string urlToSensorSites = "https://uvdata.arpansa.gov.au/api/categoriesSites";
 
-            UVIndexes.Add(new UVIndex(0f, "Low", SKColors.Green));
-            UVIndexes.Add(new UVIndex(3f, "Moderate", SKColors.Yellow));
-            UVIndexes.Add(new UVIndex(6f, "High", SKColors.Orange));
-            UVIndexes.Add(new UVIndex(8f, "Very High", SKColors.Red));
-            UVIndexes.Add(new UVIndex(11f, "Extreme", SKColors.Purple));
+            HttpResponseMessage httpResponse = await this.httpClient.GetAsync(urlToSensorSites, HttpCompletionOption.ResponseContentRead);
 
-            return UVIndexes;
+            string serverResponse = await httpResponse.Content.ReadAsStringAsync();
+
+            ArpansaLocationResponse arpansaUV = JsonConvert.DeserializeObject<ArpansaLocationResponse>(serverResponse);
+
+            return arpansaUV;
         }
     }
 }
@@ -91,3 +92,29 @@ public class TableData
     public string Measured { get; set; }
 }
 
+
+
+
+public class ArpansaLocationResponse
+{
+    public Location[] locations { get; set; }
+}
+
+public class Location
+{
+    public string id { get; set; }
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; }
+    public bool CategoryEnabled { get; set; }
+    public bool CategoryIsDefault { get; set; }
+    public int CategorySortOrder { get; set; }
+    public string SiteIdentifier { get; set; }
+    public string SiteName { get; set; }
+    public float SiteLatitude { get; set; }
+    public float SiteLongitude { get; set; }
+    public bool SiteEnabled { get; set; }
+    public DateTime SiteStartDate { get; set; }
+    public DateTime SiteEndDate { get; set; }
+    public bool SiteIsDefault { get; set; }
+    public int SiteTimeZoneOffset { get; set; }
+}

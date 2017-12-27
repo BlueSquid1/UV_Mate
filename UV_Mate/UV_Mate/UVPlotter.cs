@@ -28,7 +28,8 @@ namespace UV_Mate
         SKPaint predictedLinePaint;
         SKPaint measuredLinePaint;
 
-        //paints for area under graph lines
+        //paints for area under graph line
+        SKPaint measuredAreaPaint;
 
         //paint for UV reference lines
 
@@ -59,11 +60,13 @@ namespace UV_Mate
             this.deltaY = mDeltaY;
             this.xAxisTitle = mXAxisTitle;
             this.yAxisTitle = mYAxisTitle;
+
+            //plot lines paints
             this.predictedLinePaint = new SKPaint
             {
-                Color = SKColors.LightBlue,
+                Color = SKColors.Gray.WithAlpha(0.4f),
                 Style = SKPaintStyle.Stroke,
-                StrokeWidth = 2f,
+                StrokeWidth = 3f,
                 IsAntialias = true
             };
 
@@ -71,7 +74,14 @@ namespace UV_Mate
             {
                 Color = SKColors.DarkBlue,
                 Style = SKPaintStyle.Stroke,
-                StrokeWidth = 2f,
+                StrokeWidth = 3f,
+                IsAntialias = true
+            };
+
+            this.measuredAreaPaint = new SKPaint
+            {
+                Color = new SKColor(20, 20, 100).WithAlpha(0.1f),
+                Style = SKPaintStyle.Fill,
                 IsAntialias = true
             };
         }
@@ -115,17 +125,17 @@ namespace UV_Mate
             float UVRange = (this.maxY + 1) - this.minY;
             this.unitsPerUVLevel = this.gridHeight / UVRange;
 
-            TimeSpan timeRange = (this.maxX.Add(TimeSpan.FromHours(1))) - this.minX;
+            TimeSpan timeRange = this.maxX - this.minX;
             this.unitsPerMinute = (float)(this.gridWidth / timeRange.TotalMinutes);
-
-            //draw uv level dash lines
-            this.DrawHorizontalDashes();
 
             //put axis titles on screen
             this.DrawAxes();
 
             //draw approximate plotline
             this.DrawUVPlots();
+
+            //draw uv level dash lines
+            this.DrawHorizontalDashes();
 
             //Write current UV
             this.DrawCurrentUV();
@@ -148,7 +158,7 @@ namespace UV_Mate
 
                 SKPaint refLinePaint = new SKPaint
                 {
-                    Color = uvIndexes[i].Colour,
+                    Color = uvIndexes[i].Colour.WithAlpha(0.5f),
                     Style = SKPaintStyle.Stroke,
                     StrokeWidth = 1f,
                     PathEffect = SKPathEffect.CreateDash(new float[] { 6f, 3f }, 0),
@@ -264,7 +274,7 @@ namespace UV_Mate
             {
                 int hourValue = timeValue.Hours;
                 int minuteValue = timeValue.Minutes;
-                string timeText = hourValue.ToString() + ":" + minuteValue.ToString("00");
+                string timeText = hourValue.ToString() + ":" + minuteValue.ToString("D2");
 
                 float displacementFromBottom = (float)(timeValue.TotalMinutes - minX.TotalMinutes) * this.unitsPerMinute;
 
@@ -297,6 +307,7 @@ namespace UV_Mate
             SKPath approximatePath = new SKPath();
             SKPath measuredPath = new SKPath();
 
+            //collect data for the UV plot lines
             TimeSpan timeValue = DateTimeStringToTime(graphData[0].Date);
 
             float approxX = (float)(timeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
@@ -328,8 +339,37 @@ namespace UV_Mate
                 }
             }
 
-            graphCanvas.DrawPath(approximatePath, predictedLinePaint);
-            graphCanvas.DrawPath(measuredPath, measuredLinePaint);
+            //create an awesome rainbow shader
+            SKPoint graphBottom = new SKPoint(0.0f, 0.0f);
+            UVIndex highestUVRef = this.uvIndexes[this.uvIndexes.Count - 1];
+            float highestIVValue = highestUVRef.LowerValue;
+            SKPoint highRefPoint = new SKPoint(0.0f, highestIVValue * this.unitsPerUVLevel);
+
+            List<SKColor> colourList = new List<SKColor>();
+            List<float> posList = new List<float>();
+            foreach (var uvInfo in this.uvIndexes)
+            {
+                colourList.Add(uvInfo.Colour.WithAlpha(0.4f));
+                posList.Add(uvInfo.LowerValue / highestIVValue);
+
+            }
+            SKShader uvShader = SKShader.CreateLinearGradient(graphBottom, highRefPoint, colourList.ToArray(), posList.ToArray(), SKShaderTileMode.Clamp);
+            this.measuredLinePaint.Shader = uvShader;
+
+            ////draw approximate and measured plot lines
+            graphCanvas.DrawPath(approximatePath, this.predictedLinePaint);
+            graphCanvas.DrawPath(measuredPath, this.measuredLinePaint);
+
+            //now draw area under plot lines
+            SKPoint lastMeasuredPoint = measuredPath.GetPoint(measuredPath.PointCount - 1);
+            measuredPath.LineTo(lastMeasuredPoint.X, 0);
+            measuredPath.Close();
+
+            SKPoint lastApproximatePoint = approximatePath.GetPoint(approximatePath.PointCount - 1);
+            approximatePath.LineTo(lastApproximatePoint.X, 0);
+            approximatePath.Close();
+
+            graphCanvas.DrawPath(measuredPath, this.measuredAreaPaint);
         }
 
         private void DrawCurrentUV()
@@ -342,6 +382,7 @@ namespace UV_Mate
                 return;
             }
 
+            //get latest datapoint
             float curUVLevel = float.Parse(this.arpansaUVData.CurrentUVIndex);
 
             SKPaint textPaint = new SKPaint
@@ -351,28 +392,98 @@ namespace UV_Mate
                 IsAntialias = true
             };
 
-            SKPaint framePaint = new SKPaint
-            {
-                Style = SKPaintStyle.Fill,
-                Color = SKColors.Blue
-            };
-
             TimeSpan lastMeasurementTime = DateTimeStringToTime(this.arpansaUVData.CurrentDateTime);
 
             float textX = (float)(lastMeasurementTime.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
             float textY = curUVLevel * this.unitsPerUVLevel;
+
+            string uvString = curUVLevel.ToString("F1");
+
+
+            //create a paint based of the current reading
+            UVIndex curUVIndex = null;
+            for (int i = 0; i < this.uvIndexes.Count; i++)
+            {
+                if(curUVLevel >= this.uvIndexes[i].LowerValue)
+                {
+                    curUVIndex = this.uvIndexes[i];
+                }
+            }
+            SKPaint curColourAreaPaint = new SKPaint
+            {
+                Color = curUVIndex.Colour.WithAlpha(0.8f),
+                Style = SKPaintStyle.Fill,
+                IsAntialias = true
+            };
+            SKPaint curColourLinePaint = new SKPaint
+            {
+                Color = curUVIndex.Colour.WithAlpha(0.4f),
+                Style = SKPaintStyle.Stroke,
+                IsAntialias = true,
+                StrokeWidth = 2f
+            };
+
+            //put a nice circle and line on the endpoint
+            graphCanvas.DrawLine(textX, textY, textX, 0f, curColourLinePaint);
+
+            float pointRadius = 3.6f;
+            graphCanvas.DrawCircle(textX, textY, pointRadius, new SKPaint { Color = SKColors.White });
+            graphCanvas.DrawCircle(textX, textY, pointRadius, curColourLinePaint);
+
 
             //add some padding to the location
             textX += 8f;
             textY += 8f;
 
             SKRect uvRectFrame = new SKRect();
-            textPaint.MeasureText(curUVLevel.ToString(), ref uvRectFrame);
-            uvRectFrame.Offset(textX, textY + uvRectFrame.Height);
-            uvRectFrame.Inflate(5f, 5f);
+            textPaint.MeasureText(uvString, ref uvRectFrame);
 
-            graphCanvas.DrawRoundRect(uvRectFrame, 3f, 3f, framePaint);
-            this.DrawTextOnGraph(curUVLevel.ToString(), textX, textY, textPaint);
+            //do a check to see if current UV reading will appear off the screen
+            float framePadding = 5f;
+            if (textX + uvRectFrame.Width + framePadding >= this.gridWidth)
+            {
+                //need to re-position the text frame
+                //get UV value at maxY
+                GraphData closestPoint = this.GetClosestDataPointAtTime(this.maxX);
+
+                textX = this.gridWidth - uvRectFrame.Width - framePadding - 4f;
+                textY = (float)closestPoint?.Forecast * this.unitsPerUVLevel + 30f;
+            }
+
+            uvRectFrame.Offset(textX, textY + uvRectFrame.Height);
+            uvRectFrame.Inflate(framePadding, framePadding);
+
+            //choose colour of text frame based on current UV
+
+            graphCanvas.DrawRoundRect(uvRectFrame, 3f, 3f, curColourAreaPaint);
+            this.DrawTextOnGraph(uvString, textX, textY, textPaint);
+        }
+
+        private GraphData GetClosestDataPointAtTime(TimeSpan targetTime)
+        {
+            if(this.arpansaUVData == null)
+            {
+                //no data to sort through
+                return null;
+            }
+
+            GraphData[] uvData = this.arpansaUVData.GraphData;
+
+            GraphData closestPoint = null;
+            double closestDiff = double.PositiveInfinity;
+
+            for (int i = 0; i < uvData.Length; i++)
+            {
+                TimeSpan uvTime = DateTimeStringToTime(uvData[i].Date);
+                double diff = Math.Abs(targetTime.TotalMinutes - uvTime.TotalMinutes);
+                if(diff < closestDiff)
+                {
+                    closestPoint = uvData[i];
+                    closestDiff = diff;
+                }
+            }
+
+            return closestPoint;
         }
 
         private TimeSpan DateTimeStringToTime(string dateTimeString)

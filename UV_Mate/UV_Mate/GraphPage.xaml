@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:UV_Mate"
+             xmlns:views="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
+             xmlns:controls="clr-namespace:Refractored.XamForms.PullToRefresh;assembly=Refractored.XamForms.PullToRefresh"
+             x:Class="UV_Mate.GraphPage"
+             Title="Realtime UV">
+
+    <controls:PullToRefreshLayout IsPullToRefreshEnabled="True"
+                                  RefreshCommand="{Binding RefreshCommand}"
+                                  IsRefreshing="{Binding IsBusy}"
+                                  RefreshColor="Blue">
+        <ScrollView HorizontalOptions="FillAndExpand"
+                    VerticalOptions="FillAndExpand">
+            <Grid>
+                <Label Text="UV Mate" />
+                <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False">
+                    <views:SKGLView.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTapSample" />
+                        <PanGestureRecognizer PanUpdated="OnPanSample" />
+                        <PinchGestureRecognizer PinchUpdated="OnPinchSample" />
+                    </views:SKGLView.GestureRecognizers>
+                </views:SKGLView>
+            </Grid>
+        </ScrollView>
+    </controls:PullToRefreshLayout>
+</ContentPage>
