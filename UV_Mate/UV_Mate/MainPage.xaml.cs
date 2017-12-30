@@ -17,9 +17,10 @@ namespace UV_Mate
             InitializeComponent();
 
             ArpansaViewModel arpansaModel = new ArpansaViewModel();
+            ArpansaRealtimeFeed arpansaService = new ArpansaRealtimeFeed();
 
-            this.Children.Add(new LocationPage(arpansaModel));
-            this.Children.Add(new GraphPage(arpansaModel));
+            this.Children.Add(new GraphPage(arpansaModel, arpansaService));
+            this.Children.Add(new LocationPage(arpansaModel, arpansaService));
         }
     }
 }

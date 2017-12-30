@@ -3,9 +3,55 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="UV_Mate.LocationPage"
              Title="Location">
-    <ContentPage.Content>
-        <StackLayout>
-            <Picker x:Name="locPicker" Title="Select a location" ItemsSource="{Binding MeasureLocations}" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="20*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Picker x:Name="locPicker" 
+                Title="Select a location" 
+                ItemsSource="{Binding MeasureLocations}" 
+                SelectedIndex="{Binding LocIndexValue}"
+                IsEnabled="False"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Grid.Row="1"
+                Grid.Column="1"
+                />
+        
+        <Label x:Name="loadingLabel"
+               Text="Loading, Please wait."
+               HorizontalTextAlignment="Center"
+               Grid.Row="2"
+               Grid.Column="1"/>
+
+
+        <StackLayout x:Name="stateStack" Orientation="Horizontal" HorizontalOptions="StartAndExpand" Grid.Row="2" Grid.Column="1" IsVisible="False">
+            <Label Text="State: " HorizontalTextAlignment="End" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Black" />
+            <Label x:Name="state" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Gray" FontAttributes="Bold" />
         </StackLayout>
-    </ContentPage.Content>
+
+        <StackLayout x:Name="latStack" Orientation="Horizontal" HorizontalOptions="StartAndExpand" Grid.Row="3" Grid.Column="1" IsVisible="False">
+            <Label Text="Lat: " HorizontalTextAlignment="End" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Black" />
+            <Label x:Name="lat" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Gray" FontAttributes="Bold" />
+        </StackLayout>
+
+        <StackLayout x:Name="longStack" Orientation="Horizontal" HorizontalOptions="StartAndExpand" Grid.Row="4" Grid.Column="1" IsVisible="False">
+            <Label Text="Long: " HorizontalTextAlignment="End" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Black" />
+            <Label x:Name="longitude" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" FontSize="Medium" TextColor="Gray" FontAttributes="Bold" />
+        </StackLayout>
+        
+
+    </Grid>
 </ContentPage>

@@ -7,6 +7,13 @@
              x:Class="UV_Mate.GraphPage"
              Title="Realtime UV">
 
+    <ContentPage.Padding>
+        <OnPlatform x:TypeArguments="Thickness">
+            <On Platform="iOS" Value="0, 20, 0, 0" />
+        </OnPlatform>
+    </ContentPage.Padding>
+
+
     <controls:PullToRefreshLayout IsPullToRefreshEnabled="True"
                                   RefreshCommand="{Binding RefreshCommand}"
                                   IsRefreshing="{Binding IsBusy}"
@@ -14,8 +21,25 @@
         <ScrollView HorizontalOptions="FillAndExpand"
                     VerticalOptions="FillAndExpand">
             <Grid>
-                <Label Text="UV Mate" />
-                <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="30*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="30*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" Grid.Row="1" Grid.Column="1">
+                    <Label Text="Location: " HorizontalTextAlignment="End" VerticalTextAlignment="Center" FontSize="Large" TextColor="Black" />
+                    <Label x:Name="CurrentLocName" Text="Searching..." HorizontalTextAlignment="Start" VerticalTextAlignment="Center" FontSize="Large" TextColor="Gray" FontAttributes="Bold" />
+                </StackLayout>
+
+                <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False" Grid.Row="2" Grid.Column="1">
                     <views:SKGLView.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnTapSample" />
                         <PanGestureRecognizer PanUpdated="OnPanSample" />

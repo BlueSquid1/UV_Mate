@@ -12,11 +12,8 @@ namespace UV_Mate
 {
     public class ArpansaViewModel : INotifyPropertyChanged
     {
-        ArpansaRealtimeFeed arpansaModel;
-        string longitude;
-        string latitude;
-
-        public event EventHandler<ArpansaUVResponse> ArpansaUpdateEvent;
+        //async event
+        public event Func<object, EventArgs, Task> ArpansaUpdateEvent;
 
         bool isBusy;
         public bool IsBusy
@@ -32,42 +29,99 @@ namespace UV_Mate
             }
         }
 
-        public string[] MeasureLocations { get; set; } = new[] { "Cat", "Dog" };
+        private List<MeasuredLocation> measuredLocations = null;
+        public List<MeasuredLocation> MeasureLocations
+        {
+            get
+            {
+                return measuredLocations;
+            }
 
+            set
+            {
+                if (this.measuredLocations == value)
+                {
+                    return;
+                }
+                this.measuredLocations = value;
+                OnPropertyChanged("MeasureLocations");
+            }
+        }
+
+        private int locIndexValue = -1;
+        public int LocIndexValue
+        {
+            get
+            {
+                return this.locIndexValue;
+            }
+            set
+            {
+                this.locIndexValue = value;
+                OnPropertyChanged("LocIndexValue");
+            }
+        }
+
+        //storage place for graph data
+        private ArpansaUVData arpansaUVData;
+        public ArpansaUVData ArpansaUVData
+        {
+            get
+            {
+                return this.arpansaUVData;
+            }
+            set
+            {
+                if (this.arpansaUVData == value)
+                {
+                    return;
+                }
+                this.arpansaUVData = value;
+                OnPropertyChanged("ArpansaUVData");
+            }
+        }
+
+        //constructor
         public ArpansaViewModel()
         {
-            this.arpansaModel = new ArpansaRealtimeFeed();
         }
 
-        public async Task<ArpansaUVResponse> UpdateUVData(string longitude = "138.62", string latitude = "-34.92")
-        {
-            this.longitude = longitude;
-            this.latitude = latitude;
-            return await arpansaModel.GetUVData(longitude, latitude);
-        }
-
-        ICommand refreshCommand;
-
+        private ICommand refreshCommand;
         public ICommand RefreshCommand
         {
-            get { return refreshCommand ?? (refreshCommand = new Command(async () => await ExecuteRefreshCommand())); }
+            get
+            {
+                if( this.refreshCommand == null )
+                {
+                    this.refreshCommand = new Command( async () => await ExecuteRefreshCommand());
+                }
+                return this.refreshCommand;
+            }
         }
 
         async Task ExecuteRefreshCommand()
         {
-            if (IsBusy)
+            if (IsBusy == true)
             {
+                //already busy. Cancel event
                 return;
             }
 
             IsBusy = true;
 
-            ArpansaUVResponse latestUVData = await this.UpdateUVData(this.longitude, this.latitude);
+            //fire an async event
+            Delegate[] invocationList = ArpansaUpdateEvent.GetInvocationList();
+            Task[] handlerTasks = new Task[invocationList.Length];
 
-            //notify controller via an event
-            ArpansaUpdateEvent?.Invoke(this, latestUVData);
+            for (int i = 0; i < invocationList.Length; i++)
+            {
+                handlerTasks[i] = ((Func<object, EventArgs, Task>)invocationList[i])(this, EventArgs.Empty);
+            }
+            await Task.WhenAll(handlerTasks);
+
             IsBusy = false;
         }
+
 
         #region INotifyPropertyChanged implementation
 
@@ -80,28 +134,26 @@ namespace UV_Mate
             if (PropertyChanged == null)
                 return;
 
-            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
 
+    public class ArpansaUVData : ArpansaUVResponse
+    {
+        public List<UVIndex> ReferenceUVs { get; set; }
 
-        public List<UVIndex> GenerateUVIndexs()
+        public ArpansaUVData(ArpansaUVResponse arpansaResponse)
         {
-            //recommend UV indexes as outlined by WHO
-            //source: http://www.who.int/uv/publications/en/UVIGuide.pdf
-            List<UVIndex> UVIndexes = new List<UVIndex>();
+            this.CurrentDateTime = arpansaResponse.CurrentDateTime;
+            this.CurrentUVIndex = arpansaResponse.CurrentUVIndex;
+            this.GraphData = arpansaResponse.GraphData;
+            this.id = arpansaResponse.id;
+            this.MaximumUVLevel = arpansaResponse.MaximumUVLevel;
+            this.MaximumUVLevelDateTime = arpansaResponse.MaximumUVLevelDateTime;
+            this.TableData = arpansaResponse.TableData;
 
-            UVIndexes.Add(new UVIndex(0f, "Low", SKColors.Green));
-            UVIndexes.Add(new UVIndex(3f, "Moderate", new SKColor(190, 190, 25))); //yellow
-            UVIndexes.Add(new UVIndex(6f, "High", SKColors.Orange));
-            UVIndexes.Add(new UVIndex(8f, "Very High", SKColors.Red));
-            UVIndexes.Add(new UVIndex(11f, "Extreme", SKColors.Purple));
-
-            return UVIndexes;
-        }
-
-        public void GetMeasuredLocations()
-        {
-            this.arpansaModel.GetValidLocations();
+            ReferenceUVs = null;
         }
     }
 }
