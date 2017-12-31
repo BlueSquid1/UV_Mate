@@ -12,8 +12,8 @@ namespace UV_Mate
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class LocationPage : ContentPage
 	{
-        ArpansaViewModel arpansaModel;
-        ArpansaRealtimeFeed arpansaService;
+        private ArpansaViewModel arpansaModel;
+        private ArpansaRealtimeFeed arpansaService;
 
         public LocationPage (ArpansaViewModel mApransaModel, ArpansaRealtimeFeed mArpansaService)
 		{
@@ -32,16 +32,14 @@ namespace UV_Mate
             
             if(e.PropertyName == "MeasureLocations")
             {
-                Console.WriteLine("handlinf the MeasureLocations binding");
                 this.locPicker.IsEnabled = true;
                 this.loadingLabel.IsVisible = false;
             }
             else if(e.PropertyName == "LocIndexValue" && this.arpansaModel.MeasureLocations != null)
             {
-                Console.WriteLine("handling the LocIndexValue binding");
                 if (arpansaModel.LocIndexValue < 0 || arpansaModel.LocIndexValue >= arpansaModel.MeasureLocations.Count)
                 {
-                    Console.WriteLine("Invalid LocIndexValue");
+                    Console.WriteLine("Invalid location selected");
                     return;
                 }
                 MeasuredLocation selectedLoc = arpansaModel.MeasureLocations[arpansaModel.LocIndexValue];
@@ -49,7 +47,6 @@ namespace UV_Mate
                 //State
                 this.state.Text = selectedLoc.CategoryName;
                 this.stateStack.IsVisible = true;
-
                 
                 //latitude
                 this.lat.Text = selectedLoc.SiteLatitude.ToString();
@@ -58,7 +55,6 @@ namespace UV_Mate
                 //longitude
                 this.longitude.Text = selectedLoc.SiteLongitude.ToString();
                 this.longStack.IsVisible = true;
-                
             }
             
         }

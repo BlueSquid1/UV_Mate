@@ -50,5 +50,7 @@
 	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
 	<string>UV_Mate</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Need to access GPS location to find the nearest UV measurement site</string>
 </dict>
 </plist>

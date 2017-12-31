@@ -11,16 +11,9 @@ namespace UV_Mate
 	{
 		public App ()
 		{
-            try
-            {
-                InitializeComponent();
+            InitializeComponent();
 
-                MainPage = new UV_Mate.MainPage();
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            MainPage = new UV_Mate.MainPage();
         }
 
 		protected override void OnStart ()

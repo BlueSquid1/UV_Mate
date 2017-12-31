@@ -15,7 +15,7 @@ namespace UV_Mate
         //async event
         public event Func<object, EventArgs, Task> ArpansaUpdateEvent;
 
-        bool isBusy;
+        private bool isBusy;
         public bool IsBusy
         {
             get { return isBusy; }
@@ -81,11 +81,6 @@ namespace UV_Mate
             }
         }
 
-        //constructor
-        public ArpansaViewModel()
-        {
-        }
-
         private ICommand refreshCommand;
         public ICommand RefreshCommand
         {
@@ -99,7 +94,7 @@ namespace UV_Mate
             }
         }
 
-        async Task ExecuteRefreshCommand()
+        private async Task ExecuteRefreshCommand()
         {
             if (IsBusy == true)
             {

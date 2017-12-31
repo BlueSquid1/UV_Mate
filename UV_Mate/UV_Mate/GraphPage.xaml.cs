@@ -7,23 +7,20 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
-using System.Windows.Input;
 using Xamarin.Forms.Xaml;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
+using Plugin.Geolocator;
+using Plugin.Geolocator.Abstractions;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace UV_Mate
 {
     public partial class GraphPage : ContentPage
     {
+        private ArpansaViewModel arpansaModel;
+        private ArpansaRealtimeFeed arpansaService;
 
-        ArpansaViewModel arpansaModel;
-        ArpansaRealtimeFeed arpansaService;
-
-        UVPlotter uvGraph;
-
-        bool isFirstTime = true;
+        private UVPlotter uvGraph;
+        public bool IsAppearing { get; set; } = true;
 
         public GraphPage(ArpansaViewModel mArpansaModel, ArpansaRealtimeFeed mArpansaService)
         {
@@ -42,59 +39,70 @@ namespace UV_Mate
 
         private async void GraphPage_Appearing(object sender, EventArgs e)
         {
-            await this.UpdateGraph(sender, e);
+            //on android the appear event is called twice.
+            //this is a bug/feature (what's the difference anyway) that can be traced back to global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
+            if (this.IsAppearing == true)
+            {
+                IsAppearing = false;
+                await this.UpdateGraph(sender, e);
+            }
         }
 
         private async Task UpdateGraph(object sender, EventArgs e)
         {
-            //check if location has been selected 
-            if (this.arpansaModel.LocIndexValue == -1)
+            try
             {
-                //get GPS lat and long
-                //use dummy data for now.
-                //Choose a point near Adelaide on planet earth
-                float latitude = -34.74f;
-                float longitude = 138.81f;
-
-                //look up closest location
-                ClosestLocResponse closestLocResponse = await this.arpansaService.GetClosestArpansaLocation(longitude, latitude);
-
-                //get a list of all measured locations
-                this.arpansaModel.MeasureLocations = await this.arpansaService.GetValidLocations();
-
-                //find selected location
-                this.arpansaModel.LocIndexValue = arpansaModel.MeasureLocations.FindIndex((MeasuredLocation x) =>
-                {
-                    return x.SiteLatitude == closestLocResponse.Latitude && x.SiteLongitude == closestLocResponse.Longitude;
-                });
-
+                //check if location has been selected 
                 if (this.arpansaModel.LocIndexValue == -1)
                 {
-                    throw new Exception("failed to match closes location with the ARPANSA locations");
+                    if (!CrossGeolocator.IsSupported)
+                    {
+                        await DisplayAlert("Warning", "GPS location is not enabled on this device", "OK");
+                        return;
+                    }
+                    Position gpsPosition = await CrossGeolocator.Current.GetPositionAsync(TimeSpan.FromSeconds(10));
+
+                    float latitude = (float)gpsPosition.Latitude;
+                    float longitude = (float)gpsPosition.Longitude;
+
+                    //look up closest location
+                    ClosestLocResponse closestLocResponse = await this.arpansaService.GetClosestArpansaLocation(longitude, latitude);
+
+                    //get a list of all measured locations
+                    this.arpansaModel.MeasureLocations = await this.arpansaService.GetValidLocations();
+
+                    //find selected location
+                    this.arpansaModel.LocIndexValue = arpansaModel.MeasureLocations.FindIndex((MeasuredLocation curLoc) =>
+                    {
+                        return curLoc.SiteLatitude == closestLocResponse.Latitude && curLoc.SiteLongitude == closestLocResponse.Longitude;
+                    });
+
+                    if (this.arpansaModel.LocIndexValue == -1)
+                    {
+                        throw new Exception("failed to match closes location with the ARPANSA locations");
+                    }
                 }
+
+                //fetch latest UV data from service and then update model
+                MeasuredLocation curLocation = this.arpansaModel.MeasureLocations[this.arpansaModel.LocIndexValue];
+                CurrentLocName.Text = curLocation.SiteName;
+
+                ArpansaUVResponse arpansaUV = await this.arpansaService.GetUVData(curLocation.SiteLongitude, curLocation.SiteLatitude);
+                List<UVIndex> uvIndexes = arpansaService.GenerateUVIndexs();
+
+                //update model
+                ArpansaUVData graphData = new ArpansaUVData(arpansaUV);
+                graphData.ReferenceUVs = uvIndexes;
+                this.arpansaModel.ArpansaUVData = graphData;
             }
-
-
-            //fetch latest UV data from service and then update model
-            Console.WriteLine("retrieving closest location from ARPANSA");
-            MeasuredLocation curLocation = this.arpansaModel.MeasureLocations[this.arpansaModel.LocIndexValue];
-            CurrentLocName.Text = curLocation.SiteName;
-
-            Console.WriteLine("retrieving UV data - crash");
-            ArpansaUVResponse arpansaUV = await this.arpansaService.GetUVData(curLocation.SiteLongitude, curLocation.SiteLatitude);
-            Console.WriteLine("generating UV indexes");
-            List<UVIndex> uvIndexes = arpansaService.GenerateUVIndexs();
-
-            //update model
-            Console.WriteLine("Updating graph data in model");
-            ArpansaUVData graphData = new ArpansaUVData(arpansaUV);
-            graphData.ReferenceUVs = uvIndexes;
-            this.arpansaModel.ArpansaUVData = graphData;
+            catch( Exception e1 )
+            {
+                await DisplayAlert("Error", e1.Message, "Ok");
+            }
         }
 
         private void OnPaint(object sender, SKPaintGLSurfaceEventArgs e)
         {
-            Console.WriteLine("Painting Graph");
             //clear screen
             GRBackendRenderTargetDesc viewInfo = e.RenderTarget;
             SKSurface surface = e.Surface;
@@ -114,7 +122,7 @@ namespace UV_Mate
             uvGraph.DrawGraph(e);
         }
 
-
+        //hook methods for future use
         private void OnTapSample(object sender, EventArgs e)
         {
         }

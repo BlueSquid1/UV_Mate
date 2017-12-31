@@ -39,7 +39,7 @@
                     <Label x:Name="CurrentLocName" Text="Searching..." HorizontalTextAlignment="Start" VerticalTextAlignment="Center" FontSize="Large" TextColor="Gray" FontAttributes="Bold" />
                 </StackLayout>
 
-                <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False" Grid.Row="2" Grid.Column="1">
+                <views:SKGLView x:Name="canvasView" PaintSurface="OnPaint" HasRenderLoop="False" Grid.Row="2" Grid.Column="1" BackgroundColor="White">
                     <views:SKGLView.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnTapSample" />
                         <PanGestureRecognizer PanUpdated="OnPanSample" />

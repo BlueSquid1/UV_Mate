@@ -12,15 +12,23 @@ namespace UV_Mate
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MainPage : TabbedPage
     {
+        private GraphPage graphPage;
         public MainPage ()
         {
             InitializeComponent();
 
             ArpansaViewModel arpansaModel = new ArpansaViewModel();
             ArpansaRealtimeFeed arpansaService = new ArpansaRealtimeFeed();
-
-            this.Children.Add(new GraphPage(arpansaModel, arpansaService));
+            this.graphPage = new GraphPage(arpansaModel, arpansaService);
+            this.Children.Add(this.graphPage);
             this.Children.Add(new LocationPage(arpansaModel, arpansaService));
+
+            this.CurrentPageChanged += MainPage_CurrentPageChanged;
+        }
+
+        private void MainPage_CurrentPageChanged(object sender, EventArgs e)
+        {
+            this.graphPage.IsAppearing = true;
         }
     }
 }

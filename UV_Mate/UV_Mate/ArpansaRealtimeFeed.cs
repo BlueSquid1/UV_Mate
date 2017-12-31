@@ -6,6 +6,7 @@ using System.Web;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SkiaSharp;
+using System.Linq;
 
 namespace UV_Mate
 {
@@ -26,9 +27,7 @@ namespace UV_Mate
             string getParameters = "longitude=" + longitude.ToString() + "&latitude=" + latitude.ToString() + "&date=" + dateString;
             string completeUrl = url + "?" + getParameters;
 
-            Console.WriteLine("Sending request for UV data");
             HttpResponseMessage httpResponse = await this.httpClient.GetAsync(completeUrl, HttpCompletionOption.ResponseContentRead);
-            Console.WriteLine("retrieve reply for UV data");
             string serverResponse = await httpResponse.Content.ReadAsStringAsync();
             ArpansaUVResponse arpansaUV = JsonConvert.DeserializeObject<ArpansaUVResponse>(serverResponse);
             return arpansaUV;
@@ -46,7 +45,10 @@ namespace UV_Mate
             for(int i = 0; i < arpansaUV.Count; i++)
             {
                 arpansaUV[i].SiteName = arpansaUV[i].SiteName.Trim();
+                arpansaUV[i].CategoryName = arpansaUV[i].CategoryName.Trim();
             }
+
+            arpansaUV = arpansaUV.OrderBy(o => o.SiteName).ToList();
 
             return arpansaUV;
         }

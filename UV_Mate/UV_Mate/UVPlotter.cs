@@ -10,41 +10,48 @@ namespace UV_Mate
 {
     class UVPlotter
     {
+        //stores the SKview object. Used to force a manual canvas refresh
         private SKGLView canvasView;
 
-        string xAxisTitle;
-        float minY;
-        float maxY;
-        float deltaY;
+        //SKSurface contains all objects needed to draw to the canvas
+        private SKSurface fullPlotSurface;
 
-        string yAxisTitle;
-        TimeSpan minX;
-        TimeSpan maxX;
-        TimeSpan deltaX;
+        //variables associated with the graph
+        private string xAxisTitle;
+        private float minY;
+        private float maxY;
+        private float deltaY;
 
-        SKSurface fullPlotSurface;
+        private string yAxisTitle;
+        private TimeSpan minX;
+        private TimeSpan maxX;
+        private TimeSpan deltaX;
 
-        //paints for graph lines
-        SKPaint predictedLinePaint;
-        SKPaint measuredLinePaint;
-
-        //paints for area under graph line
-        SKPaint measuredAreaPaint;
-
+        //variable used to space out text on x and y axes
         private static float paddingHeight = 30f;
 
-        //model contains UV datapoints
+        //paint colours for graph lines
+        private SKPaint predictedLinePaint;
+        private SKPaint measuredLinePaint;
+        //paints for area under graph line
+        private SKPaint measuredAreaPaint;
+
+        private SKPaint currentUVTextPaint;
+
+        //model which stores UV datapoints
         private ArpansaViewModel arpansaModel;
 
         private float unitsPerUVLevel;
         private float unitsPerMinute;
 
-        float gridPosX = paddingHeight;
-        float gridPosY = 0f;
-        float gridWidth;
-        float gridHeight;
-        SKSurface graphSurface = null;
+        //Skia by default draws from top left. Make a graph surface which has an origin in bottom left.
+        private SKSurface graphSurface = null;
+        private float gridPosX = paddingHeight;
+        private float gridPosY = 0f;
+        private float gridWidth;
+        private float gridHeight;
 
+        //constructor
         public UVPlotter(SKGLView mCanvasView, ArpansaViewModel mArpansaModel, TimeSpan mMinX, TimeSpan mMaxX, TimeSpan mDeltaX, float mMinY, float mMaxY, float mDeltaY, string mXAxisTitle, string mYAxisTitle)
         {
             this.canvasView = mCanvasView;
@@ -58,7 +65,6 @@ namespace UV_Mate
             this.xAxisTitle = mXAxisTitle;
             this.yAxisTitle = mYAxisTitle;
 
-            //plot lines paints
             this.predictedLinePaint = new SKPaint
             {
                 Color = SKColors.Gray.WithAlpha(0.4f),
@@ -66,7 +72,6 @@ namespace UV_Mate
                 StrokeWidth = 3f,
                 IsAntialias = true
             };
-
             this.measuredLinePaint = new SKPaint
             {
                 Color = SKColors.DarkBlue,
@@ -74,11 +79,16 @@ namespace UV_Mate
                 StrokeWidth = 3f,
                 IsAntialias = true
             };
-
             this.measuredAreaPaint = new SKPaint
             {
                 Color = new SKColor(20, 20, 100).WithAlpha(0.1f),
                 Style = SKPaintStyle.Fill,
+                IsAntialias = true
+            };
+            this.currentUVTextPaint = new SKPaint
+            {
+                Color = SKColors.White,
+                TextSize = 20f,
                 IsAntialias = true
             };
 
@@ -94,6 +104,7 @@ namespace UV_Mate
             }
         }
 
+        //method responsible for drawing on the canvas
         public void DrawGraph(SKPaintGLSurfaceEventArgs e)
         {
             GRBackendRenderTargetDesc viewInfo = e.RenderTarget;
@@ -107,15 +118,22 @@ namespace UV_Mate
             to reflect any scale applied to canvas. Need to remove any scaling to get pixel dimensions correct.
             */
             canvas.Save();
+            //undo any scaling so canvas dimensions are back in pixels
             canvas.ResetMatrix();
             float pixelPerUnit = (float)(viewInfo.Width / this.canvasView.Width);
+            //get grid width in xamarin units
             float gridWidth = (float)(this.canvasView.Width - gridPosX);
+            //get grid width in pixels
             int gridWidthPixels = (int)(gridWidth * pixelPerUnit);
+            //get grid height in xamarin units
             float gridHeight = (float)(this.canvasView.Height - paddingHeight);
+            //get grid height in pixels
             int gridHeightPixels = (int)(gridHeight * pixelPerUnit);
             this.gridWidth = gridWidth;
             this.gridHeight = gridHeight;
+            //create the surface in pixels
             this.graphSurface = SKSurface.Create(gridWidthPixels, gridHeightPixels, SKColorType.Rgba8888, SKAlphaType.Premul);
+            //scale surface so it's no in xamarin units
             this.graphSurface.Canvas.Scale(pixelPerUnit);
             canvas.Restore();
 
@@ -133,7 +151,7 @@ namespace UV_Mate
             //put axis titles on screen
             this.DrawAxes();
 
-            //draw approximate plotline
+            //draw measured and approximated plot lines
             this.DrawUVPlots();
 
             //draw uv level dash lines
@@ -141,7 +159,12 @@ namespace UV_Mate
 
             //Write current UV
             this.DrawCurrentUV();
-
+            
+            /*
+            Again Skia tries to be smart by always updating GRBackendRenderTargetDesc.Width and GRBackendRenderTargetDesc.Height
+            to reflect any scale applied to canvas. Need to remove all scaling so all units are pixels before
+            drawing graph surface to the canvas.
+            */
             canvas.Save();
             canvas.ResetMatrix();
             canvas.DrawSurface(this.graphSurface, gridPosX * pixelPerUnit, gridPosY * pixelPerUnit);
@@ -171,7 +194,7 @@ namespace UV_Mate
                 IsAntialias = true
             };
 
-            //y axis
+            //draw y axis
             float gridBottomX = this.gridPosX;
             float gridBottomY = this.gridHeight;
 
@@ -224,7 +247,6 @@ namespace UV_Mate
                 IsAntialias = true
             };
 
-            //x axis
             SKPaint xAxisUnitPaint = new SKPaint
             {
                 Color = SKColors.Gray,
@@ -232,7 +254,8 @@ namespace UV_Mate
                 IsAntialias = true,
                 TextSize = 14f
             };
-
+            
+            //for each x mark
             for (TimeSpan timeValue = minX; timeValue <= maxX; timeValue = timeValue.Add(TimeSpan.FromHours(1.0d)))
             {
                 int hourValue = timeValue.Hours;
@@ -260,20 +283,14 @@ namespace UV_Mate
         private void DrawUVPlots()
         {
             ArpansaUVData arpansaData = this.arpansaModel.ArpansaUVData;
-            if(arpansaData == null)
+            if (arpansaData?.GraphData == null || arpansaData.GraphData.Length <= 0)
             {
+                //no graph data
                 return;
             }
-            if (arpansaData.GraphData == null)
+            if(arpansaData?.ReferenceUVs == null || arpansaData.ReferenceUVs.Count <= 0)
             {
-                return;
-            }
-            if(arpansaData.GraphData.Length <= 0)
-            {
-                return;
-            }
-            if(arpansaData.ReferenceUVs == null)
-            {
+                //need reference points for background colour
                 return;
             }
 
@@ -292,7 +309,7 @@ namespace UV_Mate
             float measuredX = approxX;
             float measuredY = (float)graphData[0].Measured * this.unitsPerUVLevel; ;
             measuredPath.MoveTo(measuredX, measuredY);
-
+            //for each plot point
             for (int i = 1; i < graphData.Length; i++)
             {
                 //get time
@@ -305,7 +322,7 @@ namespace UV_Mate
                 approximatePath.LineTo(curApproxX, curApproxY);
 
                 //measured UV
-                float? curMeasuredUV = graphData[i]?.Measured;
+                float? curMeasuredUV = graphData[i].Measured;
                 if (curMeasuredUV != null)
                 {
                     float curMeasuredX = curApproxX;
@@ -336,13 +353,11 @@ namespace UV_Mate
             graphCanvas.DrawPath(measuredPath, this.measuredLinePaint);
 
             //now draw area under plot lines
+            SKPoint firstMeasuredPoint = measuredPath.GetPoint(0);
             SKPoint lastMeasuredPoint = measuredPath.GetPoint(measuredPath.PointCount - 1);
             measuredPath.LineTo(lastMeasuredPoint.X, 0);
+            measuredPath.LineTo(firstMeasuredPoint.X, 0);
             measuredPath.Close();
-
-            SKPoint lastApproximatePoint = approximatePath.GetPoint(approximatePath.PointCount - 1);
-            approximatePath.LineTo(lastApproximatePoint.X, 0);
-            approximatePath.Close();
 
             graphCanvas.DrawPath(measuredPath, this.measuredAreaPaint);
         }
@@ -352,16 +367,14 @@ namespace UV_Mate
             SKCanvas graphCavnas = this.graphSurface.Canvas;
             ArpansaUVData arpansaData = this.arpansaModel.ArpansaUVData;
 
-            if (arpansaData == null)
+            if (arpansaData?.ReferenceUVs == null)
             {
-                return;
-            }
-            if (arpansaData.ReferenceUVs == null)
-            {
+                //need reference UV levels
                 return;
             }
 
-            for (int i = 0; i < arpansaData.ReferenceUVs?.Count; i++)
+            //for each refernce UV level
+            for (int i = 0; i < arpansaData.ReferenceUVs.Count; i++)
             {
                 float uvValue = arpansaData.ReferenceUVs[i].LowerValue;
                 float unitsHigh = uvValue* this.unitsPerUVLevel;
@@ -401,54 +414,35 @@ namespace UV_Mate
             SKCanvas graphCanvas = this.graphSurface.Canvas;
             ArpansaUVData arpansaData = this.arpansaModel.ArpansaUVData;
 
-            if (arpansaData == null)
+            if (arpansaData?.GraphData == null || arpansaData.GraphData.Length <= 0)
             {
+                //need graph data
                 return;
             }
-            if (arpansaData.GraphData == null)
+            if (arpansaData?.CurrentUVIndex == null || arpansaData?.CurrentDateTime == null)
             {
+                //need current data
                 return;
             }
-
-            if(arpansaData.GraphData.Length <= 0)
+            if(arpansaData?.ReferenceUVs == null)
             {
-                return;
-            }
-
-            if(arpansaData.CurrentUVIndex == null)
-            {
-                return;
-            }
-
-            if (arpansaData.CurrentDateTime == null)
-            {
-                return;
-            }
-
-            if(arpansaData.ReferenceUVs == null)
-            {
+                //need reference UV levels
                 return;
             }
 
             //get latest datapoint
             float curUVLevel = float.Parse(arpansaData.CurrentUVIndex);
 
-            SKPaint textPaint = new SKPaint
-            {
-                Color = SKColors.White,
-                TextSize = 20f,
-                IsAntialias = true
-            };
-
             TimeSpan lastMeasurementTime = DateTimeStringToTime(arpansaData.CurrentDateTime);
 
-            float textX = (float)(lastMeasurementTime.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
-            float textY = curUVLevel * this.unitsPerUVLevel;
+            float currentX = (float)(lastMeasurementTime.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
+            float currentY = curUVLevel * this.unitsPerUVLevel;
 
             string uvString = curUVLevel.ToString("F1");
 
 
             //create a paint based of the current reading
+            //paint colour will be set to the current UV reference colour
             UVIndex curUVIndex = null;
             for (int i = 0; i < arpansaData.ReferenceUVs.Count; i++)
             {
@@ -471,41 +465,43 @@ namespace UV_Mate
                 StrokeWidth = 2f
             };
 
-            //put a nice circle on the endpoint
-
+            //draw a nice circle on the endpoint
             float pointRadius = 3.6f;
-            graphCanvas.DrawCircle(textX, textY, pointRadius, new SKPaint { Color = SKColors.White });
-            graphCanvas.DrawCircle(textX, textY, pointRadius, curColourLinePaint);
+            graphCanvas.DrawCircle(currentX, currentY, pointRadius, new SKPaint { Color = SKColors.White });
+            graphCanvas.DrawCircle(currentX, currentY, pointRadius, curColourLinePaint);
 
 
-            //add some padding to the location
-            textX += 8f;
-            textY += 8f;
+            //write the current text a little up and to the right of the current point
+            float textX = currentX + 10f;
+            float textY = currentY + 10f;
 
             SKRect uvRectFrame = new SKRect();
-            textPaint.MeasureText(uvString, ref uvRectFrame);
+            this.currentUVTextPaint.MeasureText(uvString, ref uvRectFrame);
 
             //do a check to see if current UV reading will appear off the screen
             float framePadding = 5f;
             if (textX + uvRectFrame.Width + framePadding >= this.gridWidth)
             {
-                //need to re-position the text frame
-                //get UV value at maxY
+                //being cut off on x axis
                 GraphData closestPoint = this.GetClosestDataPointAtTime(this.maxX);
 
                 textX = this.gridWidth - uvRectFrame.Width - framePadding - 4f;
                 textY = (float)closestPoint?.Forecast * this.unitsPerUVLevel + 30f;
             }
+            if (textY + uvRectFrame.Height + framePadding >= this.gridHeight)
+            {
+                //being cut off on y axis
+                textY = this.gridHeight - uvRectFrame.Height - framePadding - 4f;
+            }
 
             uvRectFrame.Offset(textX, textY + uvRectFrame.Height);
             uvRectFrame.Inflate(framePadding, framePadding);
 
-            //choose colour of text frame based on current UV
-
             graphCanvas.DrawRoundRect(uvRectFrame, 3f, 3f, curColourAreaPaint);
-            this.DrawTextOnGraph(uvString, textX, textY, textPaint);
+            this.DrawTextOnGraph(uvString, textX, textY, this.currentUVTextPaint);
         }
 
+        //util method to find the closes datapoint for a given value on the x axis
         private GraphData GetClosestDataPointAtTime(TimeSpan targetTime)
         {
             ArpansaUVData arpansaData = this.arpansaModel.ArpansaUVData;
@@ -535,6 +531,7 @@ namespace UV_Mate
             return closestPoint;
         }
 
+        //util method to extract TimeSpan object from a string that contains the time
         private TimeSpan DateTimeStringToTime(string dateTimeString)
         {
             //get time from string
@@ -552,7 +549,7 @@ namespace UV_Mate
             return new TimeSpan(hours, minutes, 0);
         }
 
-        //text on graph will appear unside down since the y axis is flipped
+        //text on graph will appear unside down since the y axis is flipped. This util method will make sure text will appear upright in the graph cavnas
         private void DrawTextOnGraph(string message, float xUnits, float yUnits, SKPaint textPaint)
         {
             SKCanvas graphCavnas = this.graphSurface.Canvas;
