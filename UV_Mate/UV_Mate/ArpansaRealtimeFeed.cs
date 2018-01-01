@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SkiaSharp;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace UV_Mate
 {
@@ -83,6 +84,7 @@ namespace UV_Mate
     }
 }
 
+[Preserve(AllMembers = true)]
 public class UVIndex
 {
     public float LowerValue { get; set; }
@@ -99,6 +101,7 @@ public class UVIndex
 
 
 //update ArpansaUVData from ArpansaViewModel.cs if this changes
+[Preserve(AllMembers = true)]
 public class ArpansaUVResponse
 {
     public string id { get; set; }
@@ -110,6 +113,7 @@ public class ArpansaUVResponse
     public string MaximumUVLevelDateTime { get; set; }
 }
 
+[Preserve(AllMembers = true)]
 public class GraphData
 {
     public string id { get; set; }
@@ -118,6 +122,7 @@ public class GraphData
     public float? Measured { get; set; }
 }
 
+[Preserve(AllMembers = true)]
 public class TableData
 {
     public string id { get; set; }
@@ -126,7 +131,7 @@ public class TableData
     public string Measured { get; set; }
 }
 
-
+[Preserve(AllMembers = true)]
 public class MeasuredLocation
 {
     public string id { get; set; }
@@ -150,7 +155,7 @@ public class MeasuredLocation
     }
 }
 
-
+[Preserve(AllMembers = true)]
 public class ClosestLocResponse
 {
     public string id { get; set; }

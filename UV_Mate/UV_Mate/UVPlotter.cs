@@ -296,36 +296,52 @@ namespace UV_Mate
 
             GraphData[] graphData = arpansaData.GraphData;
             SKCanvas graphCanvas = this.graphSurface.Canvas;
-            SKPath approximatePath = new SKPath();
-            SKPath measuredPath = new SKPath();
+            SKPath approximatePath = null;
+            SKPath measuredPath = null;
 
             //collect data for the UV plot lines
             TimeSpan timeValue = DateTimeStringToTime(graphData[0].Date);
 
-            float approxX = (float)(timeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
-            float approxY = (float)graphData[0].Forecast * this.unitsPerUVLevel;
-            approximatePath.MoveTo(approxX, approxY);
+            //approximate UV
+            float? startForecast = graphData[0].Forecast;
+            if (startForecast != null)
+            {
+                float approxX = (float)(timeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
+                float approxY = (float)startForecast * this.unitsPerUVLevel;
+                approximatePath = new SKPath();
+                approximatePath.MoveTo(approxX, approxY);
+            }
 
-            float measuredX = approxX;
-            float measuredY = (float)graphData[0].Measured * this.unitsPerUVLevel; ;
-            measuredPath.MoveTo(measuredX, measuredY);
+            //measured UV
+            float? startMeasured = graphData[0].Measured;
+            if(startMeasured != null)
+            {
+                float measuredX = (float)(timeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
+                float measuredY = (float)graphData[0].Measured * this.unitsPerUVLevel;
+                measuredPath = new SKPath();
+                measuredPath.MoveTo(measuredX, measuredY);
+            }
+            
             //for each plot point
             for (int i = 1; i < graphData.Length; i++)
             {
                 //get time
                 TimeSpan curTimeValue = DateTimeStringToTime(graphData[i].Date);
-                float? curApproxUV = graphData[i].Forecast;
 
                 //approximate UV
-                float curApproxX = (float)(curTimeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
-                float curApproxY = (float)curApproxUV * this.unitsPerUVLevel;
-                approximatePath.LineTo(curApproxX, curApproxY);
+                float? curApproxUV = graphData[i].Forecast;
+                if (curApproxUV != null && approximatePath != null)
+                {
+                    float curApproxX = (float)(curTimeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
+                    float curApproxY = (float)curApproxUV * this.unitsPerUVLevel;
+                    approximatePath.LineTo(curApproxX, curApproxY);
+                }
 
                 //measured UV
                 float? curMeasuredUV = graphData[i].Measured;
-                if (curMeasuredUV != null)
+                if (curMeasuredUV != null && measuredPath != null)
                 {
-                    float curMeasuredX = curApproxX;
+                    float curMeasuredX = (float)(curTimeValue.TotalMinutes - this.minX.TotalMinutes) * this.unitsPerMinute;
                     float curMeasuredY = (float)curMeasuredUV * this.unitsPerUVLevel;
                     measuredPath.LineTo(curMeasuredX, curMeasuredY);
                 }
@@ -349,17 +365,23 @@ namespace UV_Mate
             this.measuredLinePaint.Shader = uvShader;
 
             ////draw approximate and measured plot lines
-            graphCanvas.DrawPath(approximatePath, this.predictedLinePaint);
-            graphCanvas.DrawPath(measuredPath, this.measuredLinePaint);
+            if (approximatePath != null)
+            {
+                graphCanvas.DrawPath(approximatePath, this.predictedLinePaint);
+            }
+            if (measuredPath != null)
+            {
+                graphCanvas.DrawPath(measuredPath, this.measuredLinePaint);
 
-            //now draw area under plot lines
-            SKPoint firstMeasuredPoint = measuredPath.GetPoint(0);
-            SKPoint lastMeasuredPoint = measuredPath.GetPoint(measuredPath.PointCount - 1);
-            measuredPath.LineTo(lastMeasuredPoint.X, 0);
-            measuredPath.LineTo(firstMeasuredPoint.X, 0);
-            measuredPath.Close();
+                //now draw area under plot lines
+                SKPoint firstMeasuredPoint = measuredPath.GetPoint(0);
+                SKPoint lastMeasuredPoint = measuredPath.GetPoint(measuredPath.PointCount - 1);
+                measuredPath.LineTo(lastMeasuredPoint.X, 0);
+                measuredPath.LineTo(firstMeasuredPoint.X, 0);
+                measuredPath.Close();
 
-            graphCanvas.DrawPath(measuredPath, this.measuredAreaPaint);
+                graphCanvas.DrawPath(measuredPath, this.measuredAreaPaint);
+            }
         }
 
         private void DrawHorizontalDashes()
@@ -472,8 +494,8 @@ namespace UV_Mate
 
 
             //write the current text a little up and to the right of the current point
-            float textX = currentX + 10f;
-            float textY = currentY + 10f;
+            float textX = currentX + 12f;
+            float textY = currentY + 12f;
 
             SKRect uvRectFrame = new SKRect();
             this.currentUVTextPaint.MeasureText(uvString, ref uvRectFrame);
@@ -486,7 +508,6 @@ namespace UV_Mate
                 GraphData closestPoint = this.GetClosestDataPointAtTime(this.maxX);
 
                 textX = this.gridWidth - uvRectFrame.Width - framePadding - 4f;
-                textY = (float)closestPoint?.Forecast * this.unitsPerUVLevel + 30f;
             }
             if (textY + uvRectFrame.Height + framePadding >= this.gridHeight)
             {
