@@ -5,7 +5,14 @@
              xmlns:views="clr-namespace:SkiaSharp.Views.Forms;assembly=SkiaSharp.Views.Forms"
              xmlns:controls="clr-namespace:Refractored.XamForms.PullToRefresh;assembly=Refractored.XamForms.PullToRefresh"
              x:Class="UV_Mate.GraphPage"
-             Title="Realtime UV">
+             Title="Realtime UV"
+             Icon="UVIcons">
+    
+    <ContentPage.Icon>
+        <OnPlatform x:TypeArguments="FileImageSource">
+            <On Platform="iOS" Value="UVIcons" />
+        </OnPlatform>
+    </ContentPage.Icon>
 
     <ContentPage.Padding>
         <OnPlatform x:TypeArguments="Thickness">
