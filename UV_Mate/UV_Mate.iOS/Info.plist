@@ -23,7 +23,7 @@
 	<key>MinimumOSVersion</key>
 	<string>10.3</string>
 	<key>CFBundleDisplayName</key>
-	<string>UV_Mate</string>
+	<string>UV Mate</string>
 	<key>CFBundleIdentifier</key>
 	<string>SquidInc.UV-Mate</string>
 	<key>CFBundleVersion</key>
@@ -54,7 +54,7 @@
 	<string>Need to access GPS location to find the nearest UV measurement site</string>
 	<key>XSAppIconAssets</key>
 	<string>Resources/Media.xcassets/AppIcons.appiconset</string>
-	<key>XSLaunchImageAssets</key>
-	<string>Resources/Media.xcassets/LaunchImages.launchimage</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
 </dict>
 </plist>

@@ -28,6 +28,7 @@ namespace UV_Mate
 
         private void MainPage_CurrentPageChanged(object sender, EventArgs e)
         {
+            // refresh UV data when navigate between views
             this.graphPage.IsAppearing = true;
         }
     }

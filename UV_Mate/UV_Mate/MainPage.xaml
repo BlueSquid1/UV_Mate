@@ -2,5 +2,6 @@
 <TabbedPage  xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:UV_Mate"
-             x:Class="UV_Mate.MainPage">
+             x:Class="UV_Mate.MainPage"
+             BarBackgroundColor="#F57C00">
 </TabbedPage>
