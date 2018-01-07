@@ -18,6 +18,9 @@
     <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AndroidKeyStore>false</AndroidKeyStore>
+    <AndroidSigningKeyStore>C:\Users\clint\AppData\Local\Xamarin\Mono for Android\Keystore\BlueSquid\BlueSquid.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>BlueSquid</AndroidSigningKeyAlias>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
