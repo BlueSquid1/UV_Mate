@@ -34,6 +34,8 @@ namespace UV_Mate
             arpansaModel.ArpansaUpdateEvent += UpdateGraph;
             this.Appearing += GraphPage_Appearing;
 
+            //Device.StartTimer(TimeSpan.FromMinutes(1), test);
+
             this.BindingContext = this.arpansaModel;
         }
 
