@@ -34,9 +34,18 @@ namespace UV_Mate
             arpansaModel.ArpansaUpdateEvent += UpdateGraph;
             this.Appearing += GraphPage_Appearing;
 
-            //Device.StartTimer(TimeSpan.FromMinutes(1), test);
+            //update graph every minute
+            Device.StartTimer(TimeSpan.FromMinutes(1), () => {
+                this.TimeExpired();
+                return true; 
+            });
 
             this.BindingContext = this.arpansaModel;
+        }
+
+        private async void TimeExpired()
+        {
+            await this.UpdateGraph(this, null);
         }
 
         private async void GraphPage_Appearing(object sender, EventArgs e)

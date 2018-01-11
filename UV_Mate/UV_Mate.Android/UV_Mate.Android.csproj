@@ -108,7 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\UV_Mate\UV_Mate.csproj">
-      <Project>{E627821F-26B8-4A00-9E7F-CD5FEDB076B2}</Project>
+      <Project>{E390DE5D-DA1D-4C5C-A373-DC2143279C74}</Project>
       <Name>UV_Mate</Name>
     </ProjectReference>
   </ItemGroup>

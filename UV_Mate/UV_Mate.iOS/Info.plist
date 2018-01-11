@@ -25,7 +25,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>UV Mate</string>
 	<key>CFBundleIdentifier</key>
-	<string>SquidInc.UV-Mate</string>
+	<string>com-SquidInc-UV-Mate</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>CFBundleIconFiles</key>
@@ -47,7 +47,7 @@
 		<string>Icon-Small@3x</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
-	<string>(not set)</string>
+	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
 	<string>UV_Mate</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
