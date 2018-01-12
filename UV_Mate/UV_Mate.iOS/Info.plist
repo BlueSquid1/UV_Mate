@@ -31,7 +31,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>com-SquidInc-UV-Mate</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>1.2</string>
 	<key>CFBundleIconFiles</key>
 	<array>
 		<string>Icon-60@2x</string>
@@ -51,9 +51,11 @@
 	<string>UV_Mate</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Need to access GPS location to find the nearest UV measurement site</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Need permission to access the calender</string>
 	<key>XSAppIconAssets</key>
 	<string>Resources/Media.xcassets/AppIcons.appiconset</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.2</string>
 </dict>
 </plist>
