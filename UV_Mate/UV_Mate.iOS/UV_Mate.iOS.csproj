@@ -64,11 +64,11 @@
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
     <ConsolePause>false</ConsolePause>
-    <CodesignKey>iPhone Distribution</CodesignKey>
+    <CodesignKey>iPhone Developer: clinton.page123@gmail.com (A46J48HM7M)</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>Full</MtouchLink>
     <OptimizePNGs>true</OptimizePNGs>
-    <CodesignProvision>Automatic:AppStore</CodesignProvision>
+    <CodesignProvision>VS: com-SquidInc-UV-Mate Development</CodesignProvision>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ad-Hoc|iPhone' ">
     <DebugType>none</DebugType>
