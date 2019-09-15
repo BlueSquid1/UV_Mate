@@ -98,7 +98,7 @@ namespace UV_Mate
                 MeasuredLocation curLocation = this.arpansaModel.MeasureLocations[this.arpansaModel.LocIndexValue];
                 CurrentLocName.Text = curLocation.SiteName;
 
-                ArpansaUVResponse arpansaUV = await this.arpansaService.GetUVData(curLocation.SiteLongitude, curLocation.SiteLatitude);
+                ArpansaUVResponse arpansaUV = await this.arpansaService.GetUVData(curLocation.SiteLongitude.Value, curLocation.SiteLatitude.Value);
                 List<UVIndex> uvIndexes = arpansaService.GenerateUVIndexs();
 
                 //update model

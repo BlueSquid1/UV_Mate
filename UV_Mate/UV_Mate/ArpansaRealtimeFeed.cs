@@ -135,20 +135,20 @@ public class TableData
 public class MeasuredLocation
 {
     public string id { get; set; }
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     public string CategoryName { get; set; }
-    public bool CategoryEnabled { get; set; }
-    public bool CategoryIsDefault { get; set; }
-    public int CategorySortOrder { get; set; }
+    public bool? CategoryEnabled { get; set; }
+    public bool? CategoryIsDefault { get; set; }
+    public int? CategorySortOrder { get; set; }
     public string SiteIdentifier { get; set; }
     public string SiteName { get; set; }
-    public float SiteLatitude { get; set; }
-    public float SiteLongitude { get; set; }
-    public bool SiteEnabled { get; set; }
-    public DateTime SiteStartDate { get; set; }
-    public DateTime SiteEndDate { get; set; }
-    public bool SiteIsDefault { get; set; }
-    public int SiteTimeZoneOffset { get; set; }
+    public float? SiteLatitude { get; set; }
+    public float? SiteLongitude { get; set; }
+    public bool? SiteEnabled { get; set; }
+    public DateTime? SiteStartDate { get; set; }
+    public DateTime? SiteEndDate { get; set; }
+    public bool? SiteIsDefault { get; set; }
+    public int? SiteTimeZoneOffset { get; set; }
     public override string ToString()
     {
         return this.SiteName;
@@ -161,19 +161,19 @@ public class ClosestLocResponse
     public string id { get; set; }
     public string Identifier { get; set; }
     public string Name { get; set; }
-    public float Latitude { get; set; }
-    public float Longitude { get; set; }
-    public bool Enabled { get; set; }
-    public float Channel1_CalFactor { get; set; }
-    public float Channel1_Offset { get; set; }
-    public float Channel2_CalFactor { get; set; }
-    public float Channel2_Offset { get; set; }
-    public float Channel3_CalFactor { get; set; }
-    public float Channel3_Offset { get; set; }
-    public float Channel4_CalFactor { get; set; }
-    public float Channel4_Offset { get; set; }
-    public int UsedChannel { get; set; }
-    public int CategoryId { get; set; }
+    public float? Latitude { get; set; }
+    public float? Longitude { get; set; }
+    public bool? Enabled { get; set; }
+    public float? Channel1_CalFactor { get; set; }
+    public float? Channel1_Offset { get; set; }
+    public float? Channel2_CalFactor { get; set; }
+    public float? Channel2_Offset { get; set; }
+    public float? Channel3_CalFactor { get; set; }
+    public float? Channel3_Offset { get; set; }
+    public float? Channel4_CalFactor { get; set; }
+    public float? Channel4_Offset { get; set; }
+    public int? UsedChannel { get; set; }
+    public int? CategoryId { get; set; }
     public string CategoryName { get; set; }
-    public float Distance_In_Km { get; set; }
+    public float? Distance_In_Km { get; set; }
 }
