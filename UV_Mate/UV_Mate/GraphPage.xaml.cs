@@ -50,50 +50,72 @@ namespace UV_Mate
 
         private async void GraphPage_Appearing(object sender, EventArgs e)
         {
-            //on android the appear event is called twice.
-            //this is a bug/feature (what's the difference anyway) that can be traced back to global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
-            if (this.IsAppearing == true)
+            try
             {
-                IsAppearing = false;
-                await this.UpdateGraph(sender, e);
+                //on android the appear event is called twice. Use the IsAppearing variable to prevent this from running too many times.
+                if (this.IsAppearing == true)
+                {
+                    IsAppearing = false;
+
+                    if (this.arpansaModel.LocIndexValue < 0)
+                    {
+                        //get a list of all measured locations
+                        this.arpansaModel.MeasureLocations = await this.arpansaService.GetValidLocations();
+                        //populate current location
+                        this.arpansaModel.LocIndexValue = await this.FindClosestStation(this.arpansaModel.MeasureLocations);
+                    }
+
+                    await this.UpdateGraph(sender, e);
+                }
             }
+            catch(Exception e1)
+            {
+                await DisplayAlert("Error", e1.Message, "Ok");
+            }
+        }
+
+        private async Task<int> FindClosestStation(List<MeasuredLocation> locations)
+        {
+            int siteIndex = -1;
+            try
+            {
+                Position gpsPosition = await CrossGeolocator.Current.GetPositionAsync(TimeSpan.FromSeconds(3));
+
+                float latitude = (float)gpsPosition.Latitude;
+                float longitude = (float)gpsPosition.Longitude;
+
+                //look up closest location
+                ClosestLocResponse closestLocResponse = await this.arpansaService.GetClosestArpansaLocation(longitude, latitude);
+
+                //find selected location
+                siteIndex = locations.FindIndex((MeasuredLocation curLoc) =>
+                {
+                    return curLoc.SiteLatitude == closestLocResponse.Latitude && curLoc.SiteLongitude == closestLocResponse.Longitude;
+                });
+
+                if (siteIndex == -1)
+                {
+                    throw new Exception("failed to match closes location with the ARPANSA locations.");
+                }
+            }
+            catch (Exception e1)
+            {
+                //failed to find a location. Just select the first one
+                siteIndex = 0;
+                string errorMsg = e1.Message;
+                if ( e1 is GeolocationException )
+                {
+                    errorMsg = "Location is used to find the closest ARPANSA station. Please manual select your location instead.";
+                }
+                await DisplayAlert("Error", errorMsg, "Ok");
+            }
+            return siteIndex;
         }
 
         private async Task UpdateGraph(object sender, EventArgs e)
         {
             try
             {
-                //check if location has been selected 
-                if (this.arpansaModel.LocIndexValue == -1)
-                {
-                    if (!CrossGeolocator.IsSupported)
-                    {
-                        await DisplayAlert("Warning", "GPS location is not enabled on this device", "OK");
-                        return;
-                    }
-                    Position gpsPosition = await CrossGeolocator.Current.GetPositionAsync(TimeSpan.FromSeconds(10));
-
-                    float latitude = (float)gpsPosition.Latitude;
-                    float longitude = (float)gpsPosition.Longitude;
-
-                    //look up closest location
-                    ClosestLocResponse closestLocResponse = await this.arpansaService.GetClosestArpansaLocation(longitude, latitude);
-
-                    //get a list of all measured locations
-                    this.arpansaModel.MeasureLocations = await this.arpansaService.GetValidLocations();
-
-                    //find selected location
-                    this.arpansaModel.LocIndexValue = arpansaModel.MeasureLocations.FindIndex((MeasuredLocation curLoc) =>
-                    {
-                        return curLoc.SiteLatitude == closestLocResponse.Latitude && curLoc.SiteLongitude == closestLocResponse.Longitude;
-                    });
-
-                    if (this.arpansaModel.LocIndexValue == -1)
-                    {
-                        throw new Exception("failed to match closes location with the ARPANSA locations");
-                    }
-                }
-
                 //fetch latest UV data from service and then update model
                 MeasuredLocation curLocation = this.arpansaModel.MeasureLocations[this.arpansaModel.LocIndexValue];
                 CurrentLocName.Text = curLocation.SiteName;
