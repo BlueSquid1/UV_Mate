@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace UV_Mate
 {
+    [Preserve(AllMembers = true)]
     class UVPlotter
     {
         //stores the SKview object. Used to force a manual canvas refresh

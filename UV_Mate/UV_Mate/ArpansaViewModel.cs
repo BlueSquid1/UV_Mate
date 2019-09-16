@@ -7,9 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace UV_Mate
 {
+    [Preserve(AllMembers = true)]
     public class ArpansaViewModel : INotifyPropertyChanged
     {
         //async event
