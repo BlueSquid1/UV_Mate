@@ -51,8 +51,8 @@ namespace UV_Mate
             }
         }
 
-        private int locIndexValue = -1;
-        public int LocIndexValue
+        private int? locIndexValue = null;
+        public int? LocIndexValue
         {
             get
             {

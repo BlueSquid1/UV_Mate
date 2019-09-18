@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -42,17 +42,19 @@ namespace UV_Mate
                     Console.WriteLine("Invalid location selected");
                     return;
                 }
-                MeasuredLocation selectedLoc = arpansaModel.MeasureLocations[arpansaModel.LocIndexValue];
+                //save the new selected location
+                Preferences.Set("LocIndexValue", arpansaModel.LocIndexValue.Value);
+                MeasuredLocation selectedLoc = arpansaModel.MeasureLocations[arpansaModel.LocIndexValue.Value];
 
-                //State
+                //update state field
                 this.state.Text = selectedLoc.CategoryName;
                 this.stateStack.IsVisible = true;
                 
-                //latitude
+                //update latitude field
                 this.lat.Text = selectedLoc.SiteLatitude.ToString();
                 this.latStack.IsVisible = true;
 
-                //longitude
+                //update longitude field
                 this.longitude.Text = selectedLoc.SiteLongitude.ToString();
                 this.longStack.IsVisible = true;
             }
