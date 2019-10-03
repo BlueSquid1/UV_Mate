@@ -6,12 +6,12 @@
     >
     <TabbedPage.BarBackgroundColor>
         <OnPlatform x:TypeArguments="Color">
-            <On Platform="Android" Value="#F57C00" />
+            <On Platform="Android" Value="#f09942" />
         </OnPlatform>
     </TabbedPage.BarBackgroundColor>
     <TabbedPage.BarTextColor>
         <OnPlatform x:TypeArguments="Color">
-            <On Platform="iOS" Value="#F57C00" />
+            <On Platform="iOS" Value="#f09942" />
         </OnPlatform>
     </TabbedPage.BarTextColor>
 </TabbedPage>

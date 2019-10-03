@@ -24,7 +24,7 @@
     <controls:PullToRefreshLayout IsPullToRefreshEnabled="True"
                                   RefreshCommand="{Binding RefreshCommand}"
                                   IsRefreshing="{Binding IsBusy}"
-                                  RefreshColor="Blue">
+                                  RefreshColor="#ff8000">
         <ScrollView HorizontalOptions="FillAndExpand"
                     VerticalOptions="FillAndExpand">
             <Grid>
