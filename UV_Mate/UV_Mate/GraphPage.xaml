@@ -6,7 +6,8 @@
              xmlns:controls="clr-namespace:Refractored.XamForms.PullToRefresh;assembly=Refractored.XamForms.PullToRefresh"
              x:Class="UV_Mate.GraphPage"
              Title="Realtime UV"
-             Icon="UVIcons">
+             Icon="UVIcons"
+             BackgroundColor="#f8f8f8">
     
     <ContentPage.Icon>
         <OnPlatform x:TypeArguments="FileImageSource">

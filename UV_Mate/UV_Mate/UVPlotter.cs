@@ -40,6 +40,8 @@ namespace UV_Mate
 
         private SKPaint currentUVTextPaint;
 
+        private Color backgroundColor;
+
         //model which stores UV datapoints
         private ArpansaViewModel arpansaModel;
 
@@ -54,7 +56,7 @@ namespace UV_Mate
         private float gridHeight;
 
         //constructor
-        public UVPlotter(SKGLView mCanvasView, ArpansaViewModel mArpansaModel, TimeSpan mMinX, TimeSpan mMaxX, TimeSpan mDeltaX, float mMinY, float mMaxY, float mDeltaY, string mXAxisTitle, string mYAxisTitle)
+        public UVPlotter(SKGLView mCanvasView, ArpansaViewModel mArpansaModel, TimeSpan mMinX, TimeSpan mMaxX, TimeSpan mDeltaX, float mMinY, float mMaxY, float mDeltaY, string mXAxisTitle, string mYAxisTitle, Color backgroundColor)
         {
             this.canvasView = mCanvasView;
             this.arpansaModel = mArpansaModel;
@@ -93,6 +95,8 @@ namespace UV_Mate
                 TextSize = 20f,
                 IsAntialias = true
             };
+
+            this.backgroundColor = backgroundColor;
 
             this.arpansaModel.PropertyChanged += ArpansaModel_PropertyChanged;
         }
@@ -150,6 +154,9 @@ namespace UV_Mate
             TimeSpan timeRange = this.maxX - this.minX;
             this.unitsPerMinute = (float)(this.gridWidth / timeRange.TotalMinutes);
 
+            //fill in background
+            this.DrawBackground();
+
             //put axis titles on screen
             this.DrawAxes();
 
@@ -171,6 +178,11 @@ namespace UV_Mate
             canvas.ResetMatrix();
             canvas.DrawSurface(this.graphSurface, gridPosX * pixelPerUnit, gridPosY * pixelPerUnit);
             canvas.Restore();
+        }
+
+        private void DrawBackground()
+        {
+            this.fullPlotSurface.Canvas.DrawColor(SKColor.Parse(this.backgroundColor.ToHex()));
         }
 
         private void DrawAxes()

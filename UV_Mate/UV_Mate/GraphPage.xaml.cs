@@ -27,8 +27,7 @@ namespace UV_Mate
             InitializeComponent();
             this.arpansaModel = mArpansaModel;
             this.arpansaService = mArpansaService;
-
-            this.uvGraph = new UVPlotter(this.canvasView, this.arpansaModel, new TimeSpan(6, 0, 0), new TimeSpan(20, 0, 0), new TimeSpan(3, 0, 0), 0, 13, 2, "Time of Day", "UV Level");
+            this.uvGraph = new UVPlotter(this.canvasView, this.arpansaModel, new TimeSpan(6, 0, 0), new TimeSpan(20, 0, 0), new TimeSpan(3, 0, 0), 0, 13, 2, "Time of Day", "UV Level", this.BackgroundColor);
 
             //subscribe to events
             arpansaModel.ArpansaUpdateEvent += UpdateGraph;
@@ -60,7 +59,6 @@ namespace UV_Mate
                     if (this.arpansaModel.LocIndexValue == null)
                     {
                         //model has not been set
-
                         //populate a list of all measured locations
                         this.arpansaModel.MeasureLocations = await this.arpansaService.GetValidLocations();
 
