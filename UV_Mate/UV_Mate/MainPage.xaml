@@ -3,15 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:UV_Mate"
              x:Class="UV_Mate.MainPage"
+             SelectedTabColor="#F09942"
     >
     <TabbedPage.BarBackgroundColor>
         <OnPlatform x:TypeArguments="Color">
-            <On Platform="Android" Value="#f09942" />
+            <On Platform="Android" Value="#fF9942" />
         </OnPlatform>
     </TabbedPage.BarBackgroundColor>
+
+    <TabbedPage.SelectedTabColor>
+        <OnPlatform x:TypeArguments="Color">
+            <On Platform="iOS" Value="#F09942" />
+        </OnPlatform>
+    </TabbedPage.SelectedTabColor>
     <TabbedPage.BarTextColor>
         <OnPlatform x:TypeArguments="Color">
-            <On Platform="iOS" Value="#f09942" />
+            <On Platform="iOS" Value="#F09942" />
         </OnPlatform>
     </TabbedPage.BarTextColor>
 </TabbedPage>
